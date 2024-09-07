@@ -18,7 +18,7 @@
             <label for="profile_image">Profile Image :</label>
             <input type="file" id="profile_image" name="profile_image" accept="image/*" onkeyup="validateAll()">
             <span id="image_error" class="error"></span>
-
+            
             <label for="name">Name :</label>
             <input type="text" name="name" id="name" onkeyup="validateAll()">
             <span id="name_error" class="error"></span>
@@ -56,8 +56,8 @@
         <button type="submit">Generate Resume Below</button>
     </form>
 
-    <div id="resume_container">
-        <div id="resume_data"></div>
+    <div id="resume_data">
+        <!-- Resume will be generated below -->
     </div>
 
     <script src="main.js"></script>
