@@ -47,6 +47,7 @@ function displayUploadedImage(): void {
     }
 }
 
+
 document.getElementById('resume_form')?.addEventListener('submit', function (event) {
     event.preventDefault();
 
@@ -78,7 +79,6 @@ document.getElementById('resume_form')?.addEventListener('submit', function (eve
         if (resumeDataElement) {
             resumeDataElement.innerHTML = resumeData;
             resumeDataElement.style.display = 'block';
-            addEditButton();
         }
 
         const formElement = document.getElementById('resume_form') as HTMLFormElement;
@@ -86,75 +86,6 @@ document.getElementById('resume_form')?.addEventListener('submit', function (eve
         uploadedImageSrc = '';
     }
 });
-
-function addEditButton(): void {
-    let editButton = document.getElementById('edit_button') as HTMLButtonElement | null;
-
-    if (!editButton) {
-        editButton = document.createElement('button');
-        editButton.id = 'edit_button';
-        editButton.textContent = 'Edit Resume';
-        editButton.style.display = 'block';
-        editButton.style.marginTop = '20px';
-
-        const resumeContainer = document.getElementById('resume_data');
-        if (resumeContainer) {
-            resumeContainer.appendChild(editButton);
-        }
-
-        editButton.addEventListener('click', enableResumeEditing);
-    }
-}
-
-function enableResumeEditing(): void {
-    const resumeDataElement = document.getElementById('resume_data') as HTMLElement;
-
-    if (resumeDataElement) {
-        const resumeHtml = resumeDataElement.innerHTML;
-
-        resumeDataElement.style.display = 'none';
-
-        const nameElement = document.getElementById('name') as HTMLInputElement;
-        const emailElement = document.getElementById('email') as HTMLInputElement;
-        const phoneElement = document.getElementById('phone') as HTMLInputElement;
-        const educationElement = document.getElementById('education') as HTMLTextAreaElement;
-        const experienceElement = document.getElementById('experience') as HTMLTextAreaElement;
-        const skillsElement = document.getElementById('skills') as HTMLTextAreaElement;
-
-        nameElement.value = extractResumeData('Name', resumeHtml);
-        emailElement.value = extractResumeData('Email', resumeHtml);
-        phoneElement.value = extractResumeData('Phone Number', resumeHtml);
-        educationElement.value = extractResumeData('Education', resumeHtml);
-        experienceElement.value = extractResumeData('Experience', resumeHtml);
-        skillsElement.value = extractResumeData('Skills', resumeHtml);
-
-        // Set the previous image if available
-        const previousImageSrc = extractResumeImageSrc(resumeHtml);
-        uploadedImageSrc = previousImageSrc;
-        displayUploadedImage();
-
-        document.getElementById('resume_form')?.scrollIntoView({ behavior: 'smooth' });
-    }
-}
-
-function extractResumeData(label: string, html: string): string {
-    let regex;
-
-    if (label === 'Education' || label === 'Experience' || label === 'Skills') {
-        regex = new RegExp(`<h2>${label}</h2>\\s*<p>([^<]+)</p>`);
-    } else {
-        regex = new RegExp(`<p><strong>${label}\\s*:\\s*</strong>\\s*([^<]+)</p>`);
-    }
-
-    const match = html.match(regex);
-    return match ? match[1].trim() : '';
-}
-
-function extractResumeImageSrc(html: string): string {
-    const regex = /<p><img src="([^"]+)" alt="Profile Image"/;
-    const match = html.match(regex);
-    return match ? match[1].trim() : '';
-}
 
 function validateAll() {
     const isNameValid = validateName();
