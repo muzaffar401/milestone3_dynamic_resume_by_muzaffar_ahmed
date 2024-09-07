@@ -59,69 +59,12 @@ function displayUploadedImage() {
         if (resumeDataElement) {
             resumeDataElement.innerHTML = resumeData;
             resumeDataElement.style.display = 'block';
-            addEditButton();
         }
         var formElement = document.getElementById('resume_form');
         formElement.reset();
         uploadedImageSrc = '';
     }
 });
-function addEditButton() {
-    var editButton = document.getElementById('edit_button');
-    if (!editButton) {
-        editButton = document.createElement('button');
-        editButton.id = 'edit_button';
-        editButton.textContent = 'Edit Resume';
-        editButton.style.display = 'block';
-        editButton.style.marginTop = '20px';
-        var resumeContainer = document.getElementById('resume_data');
-        if (resumeContainer) {
-            resumeContainer.appendChild(editButton);
-        }
-        editButton.addEventListener('click', enableResumeEditing);
-    }
-}
-function enableResumeEditing() {
-    var _a;
-    var resumeDataElement = document.getElementById('resume_data');
-    if (resumeDataElement) {
-        var resumeHtml = resumeDataElement.innerHTML;
-        resumeDataElement.style.display = 'none';
-        var nameElement = document.getElementById('name');
-        var emailElement = document.getElementById('email');
-        var phoneElement = document.getElementById('phone');
-        var educationElement = document.getElementById('education');
-        var experienceElement = document.getElementById('experience');
-        var skillsElement = document.getElementById('skills');
-        nameElement.value = extractResumeData('Name', resumeHtml);
-        emailElement.value = extractResumeData('Email', resumeHtml);
-        phoneElement.value = extractResumeData('Phone Number', resumeHtml);
-        educationElement.value = extractResumeData('Education', resumeHtml);
-        experienceElement.value = extractResumeData('Experience', resumeHtml);
-        skillsElement.value = extractResumeData('Skills', resumeHtml);
-        // Set the previous image if available
-        var previousImageSrc = extractResumeImageSrc(resumeHtml);
-        uploadedImageSrc = previousImageSrc;
-        displayUploadedImage();
-        (_a = document.getElementById('resume_form')) === null || _a === void 0 ? void 0 : _a.scrollIntoView({ behavior: 'smooth' });
-    }
-}
-function extractResumeData(label, html) {
-    var regex;
-    if (label === 'Education' || label === 'Experience' || label === 'Skills') {
-        regex = new RegExp("<h2>".concat(label, "</h2>\\s*<p>([^<]+)</p>"));
-    }
-    else {
-        regex = new RegExp("<p><strong>".concat(label, "\\s*:\\s*</strong>\\s*([^<]+)</p>"));
-    }
-    var match = html.match(regex);
-    return match ? match[1].trim() : '';
-}
-function extractResumeImageSrc(html) {
-    var regex = /<p><img src="([^"]+)" alt="Profile Image"/;
-    var match = html.match(regex);
-    return match ? match[1].trim() : '';
-}
 function validateAll() {
     var isNameValid = validateName();
     var isEmailValid = validateEmail();
