@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Add input event listeners to trigger validation automatically
     const nameElement = document.getElementById('name') as HTMLInputElement;
     const emailElement = document.getElementById('email') as HTMLInputElement;
     const phoneElement = document.getElementById('phone') as HTMLInputElement;
     const educationElement = document.getElementById('education') as HTMLTextAreaElement;
     const experienceElement = document.getElementById('experience') as HTMLTextAreaElement;
     const skillsElement = document.getElementById('skills') as HTMLTextAreaElement;
+    const profileImageElement = document.getElementById('profile_image') as HTMLInputElement;
 
     nameElement.addEventListener('input', validateName);
     emailElement.addEventListener('input', validateEmail);
@@ -13,12 +13,43 @@ document.addEventListener('DOMContentLoaded', function () {
     educationElement.addEventListener('input', validateEducation);
     experienceElement.addEventListener('input', validateExperience);
     skillsElement.addEventListener('input', validateSkills);
+    profileImageElement.addEventListener('change', handleImageUpload);
 });
+
+let uploadedImageSrc: string = '';
+
+function handleImageUpload(): void {
+    const file = (document.getElementById('profile_image') as HTMLInputElement).files?.[0];
+    const imageError = document.getElementById('image_error')!;
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e: ProgressEvent<FileReader>) {
+            if (e.target?.result) {
+                uploadedImageSrc = e.target.result as string;
+                validateImage();  // Validate the image and update error message
+                displayUploadedImage(); // Update the image preview
+            }
+        };
+        reader.readAsDataURL(file);
+    } else {
+        uploadedImageSrc = '';
+        validateImage();  // Validate the image and update error message
+        displayUploadedImage(); // Update the image preview
+    }
+}
+
+function displayUploadedImage(): void {
+    const imagePreview = document.getElementById('image_preview') as HTMLImageElement;
+    if (imagePreview) {
+        imagePreview.src = uploadedImageSrc;
+        imagePreview.style.display = uploadedImageSrc ? 'block' : 'none';
+    }
+}
 
 document.getElementById('resume_form')?.addEventListener('submit', function (event) {
     event.preventDefault();
 
-    // Validate all fields before generating resume
     if (validateAll()) {
         const name = (document.getElementById('name') as HTMLInputElement).value;
         const email = (document.getElementById('email') as HTMLInputElement).value;
@@ -30,8 +61,8 @@ document.getElementById('resume_form')?.addEventListener('submit', function (eve
         const resumeData =
             `
         <h2>RESUME</h2>
-        <br>
         <h2>Personal Information</h2>
+        ${uploadedImageSrc ? `<p><img src="${uploadedImageSrc}" alt="Profile Image" style="width: 100px; height: 100px;" id="resume_image"></p>` : ''}
         <p><strong>Name :</strong> ${name}</p>
         <p><strong>Email :</strong> ${email}</p>
         <p><strong>Phone Number :</strong> ${phone}</p>
@@ -43,25 +74,88 @@ document.getElementById('resume_form')?.addEventListener('submit', function (eve
         <p>${skills}</p>
         `;
 
-        const resumeDataElement = document.getElementById('resume_data');
-
+        const resumeDataElement = document.getElementById('resume_data') as HTMLElement;
         if (resumeDataElement) {
             resumeDataElement.innerHTML = resumeData;
-        } else {
-            console.error('The Resume Output Elements are Missing!');
+            resumeDataElement.style.display = 'block';
+            addEditButton();
         }
 
-        // Reset the form fields
         const formElement = document.getElementById('resume_form') as HTMLFormElement;
-        if (formElement) {
-            formElement.reset();
-        }
-    } else {
-        console.error('Form validation failed.');
+        formElement.reset();
+        uploadedImageSrc = '';
     }
 });
 
-// Validate all fields
+function addEditButton(): void {
+    let editButton = document.getElementById('edit_button') as HTMLButtonElement | null;
+
+    if (!editButton) {
+        editButton = document.createElement('button');
+        editButton.id = 'edit_button';
+        editButton.textContent = 'Edit Resume';
+        editButton.style.display = 'block';
+        editButton.style.marginTop = '20px';
+
+        const resumeContainer = document.getElementById('resume_data');
+        if (resumeContainer) {
+            resumeContainer.appendChild(editButton);
+        }
+
+        editButton.addEventListener('click', enableResumeEditing);
+    }
+}
+
+function enableResumeEditing(): void {
+    const resumeDataElement = document.getElementById('resume_data') as HTMLElement;
+
+    if (resumeDataElement) {
+        const resumeHtml = resumeDataElement.innerHTML;
+
+        resumeDataElement.style.display = 'none';
+
+        const nameElement = document.getElementById('name') as HTMLInputElement;
+        const emailElement = document.getElementById('email') as HTMLInputElement;
+        const phoneElement = document.getElementById('phone') as HTMLInputElement;
+        const educationElement = document.getElementById('education') as HTMLTextAreaElement;
+        const experienceElement = document.getElementById('experience') as HTMLTextAreaElement;
+        const skillsElement = document.getElementById('skills') as HTMLTextAreaElement;
+
+        nameElement.value = extractResumeData('Name', resumeHtml);
+        emailElement.value = extractResumeData('Email', resumeHtml);
+        phoneElement.value = extractResumeData('Phone Number', resumeHtml);
+        educationElement.value = extractResumeData('Education', resumeHtml);
+        experienceElement.value = extractResumeData('Experience', resumeHtml);
+        skillsElement.value = extractResumeData('Skills', resumeHtml);
+
+        // Set the previous image if available
+        const previousImageSrc = extractResumeImageSrc(resumeHtml);
+        uploadedImageSrc = previousImageSrc;
+        displayUploadedImage();
+
+        document.getElementById('resume_form')?.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+function extractResumeData(label: string, html: string): string {
+    let regex;
+
+    if (label === 'Education' || label === 'Experience' || label === 'Skills') {
+        regex = new RegExp(`<h2>${label}</h2>\\s*<p>([^<]+)</p>`);
+    } else {
+        regex = new RegExp(`<p><strong>${label}\\s*:\\s*</strong>\\s*([^<]+)</p>`);
+    }
+
+    const match = html.match(regex);
+    return match ? match[1].trim() : '';
+}
+
+function extractResumeImageSrc(html: string): string {
+    const regex = /<p><img src="([^"]+)" alt="Profile Image"/;
+    const match = html.match(regex);
+    return match ? match[1].trim() : '';
+}
+
 function validateAll() {
     const isNameValid = validateName();
     const isEmailValid = validateEmail();
@@ -69,8 +163,9 @@ function validateAll() {
     const isEducationValid = validateEducation();
     const isExperienceValid = validateExperience();
     const isSkillsValid = validateSkills();
+    const isImageValid = validateImage();
 
-    return isNameValid && isEmailValid && isPhoneValid && isEducationValid && isExperienceValid && isSkillsValid;
+    return isNameValid && isEmailValid && isPhoneValid && isEducationValid && isExperienceValid && isSkillsValid && isImageValid;
 }
 
 // Validation functions
@@ -166,6 +261,18 @@ function validateSkills() {
         return false;
     } else {
         skillsError.textContent = '';
+        return true;
+    }
+}
+
+function validateImage(): boolean {
+    const imageError = document.getElementById('image_error')!;
+
+    if (!uploadedImageSrc) {
+        imageError.textContent = 'Please upload an image.';
+        return false;
+    } else {
+        imageError.textContent = '';  // Clear the error if the image is valid
         return true;
     }
 }
